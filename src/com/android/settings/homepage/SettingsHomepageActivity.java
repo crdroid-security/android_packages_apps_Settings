@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -52,6 +53,8 @@ import com.android.settingslib.drawable.CircleFramedDrawable;
 
 public class SettingsHomepageActivity extends FragmentActivity {
 
+    private static final String TAG = "SettingsHomepageActivity";
+
     Context mContext;
     ImageView avatarView;
     UserManager mUserManager;
@@ -59,6 +62,16 @@ public class SettingsHomepageActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Ensure device is provisioned in order to access Settings home
+        // TODO(b/331254029): This should later be replaced in favor of an allowlist
+        boolean unprovisioned = android.provider.Settings.Global.getInt(getContentResolver(),
+                android.provider.Settings.Global.DEVICE_PROVISIONED, 0) == 0;
+        if (unprovisioned) {
+            Log.e(TAG, "Device is not provisioned, exiting Settings");
+            finish();
+            return;
+        }
 
         setContentView(R.layout.settings_homepage_container);
         final View root = findViewById(R.id.settings_homepage_container);
